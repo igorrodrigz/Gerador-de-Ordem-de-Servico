@@ -1,135 +1,151 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Gerador de Ordem de Serviço</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-	<link rel="stylesheet" href="style.css"
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Ordem de Serviço</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <header>
-	<img src="logo_reciclar.png" alt="Logo Reciclar" height="120" style="align: center">	
-	<h1 style="text-align: center;">Gerador de OS</h1>
+    <img src="logo_reciclar.png" alt="Logo Reciclar" height="120" style="align: center">
+    <h1 style="text-align: center;">Gerador de OS</h1>
 </header>
 <body>
-	<nav>
-		<a href="os.html" title="home">Início</a>
-	</nav>
-	<main>
-		<form id="formulario">
-			<h3>Preencha os campos abaixo para gerar a Ordem de Serviço</h3>
-			<label for="nome">Nome do Contato:</label>
-			<input type="text" id="nome" placeholder="Digite seu nome" required>
-			<br>
+    <nav>
+        <a href="os.html" title="home">Início</a>
+    </nav>
+    <main>
+        <form id="formulario">
+            <h3>Preencha os campos abaixo para gerar a Ordem de Serviço</h3>
+            <label for="nome">Nome do Contato:</label>
+            <input type="text" id="nome" placeholder="Digite seu nome" required>
+            <br>
 
-			<label for="telefone">Telefone/Whatsapp:</label>
-			<input type="text" id="telefone" placeholder="Digite o número do contato" required>
-			<br>
+            <label for="telefone">Telefone/Whatsapp:</label>
+            <input type="text" id="telefone" placeholder="Digite o número do contato" required>
+            <br>
 
-			<label for="emissao">Data de Emissão:</label>
-			<input type="date" id="emissao" required>
-			<br>
+            <label for="emissao">Data de Emissão:</label>
+            <input type="date" id="emissao" required>
+            <br>
 
-			<label for="entrega">Data de Entrega:</label>
-			<input type="date" id="entrega" required>
-			<br>
+            <label for="entrega">Data de Entrega:</label>
+            <input type="date" id="entrega" required>
+            <br>
 
-			<label for="quantidade">Quantidade:</label>
-			<input type="text" id="quantidade" placeholder="Descreva a quantidade do pedido" required>
-			<br> 
+            <label for="quantidade">Quantidade:</label>
+            <input type="text" id="quantidade" placeholder="Descreva a quantidade do pedido" required>
+            <br>
 
-			<label for="acabamento">Acabamento:</label>
-			<input type="text" id="acabamento" placeholder="Descreva o acabamento das peças" required>
-			<br>
+            <label for="acabamento">Acabamento:</label>
+            <input type="text" id="acabamento" placeholder="Descreva o acabamento das peças" required>
+            <br>
 
-			<label for="valor">Valor:</label>
-			<input type="text" id="valor" placeholder="Digite o valor do serviço" required>
-			<br>
+            <label for="valor">Valor:</label>
+            <input type="text" id="valor" placeholder="Digite o valor do serviço" required>
+            <br>
 
-			<label for="pagamento">Status do Pagamento:</label>
-			<input type="text" id="pagamento" placeholder="Descreva o status do pagamento" required>
-			<br>
+            <label for="pagamento">Status do Pagamento:</label>
+            <input type="text" id="pagamento" placeholder="Descreva o status do pagamento" required>
+            <br>
 
-			<label for="img">Imagem do item:</label>
-			<input type="file" id="img">
-			<br>
+            <label for="img">Imagem do item:</label>
+            <input type="file" id="img" multiple>
+            <br>
 
-			<label for="descricao">Descrição:</label>
-			<textarea id="descricao" rows="5" placeholder="Digite uma descrição ou observação"></textarea>
-			<br>
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" rows="5" maxlength="150" placeholder="Digite uma descrição ou observação"></textarea>
+            <br>
 
-			<button type="button" onclick="gerarPDF()">Gerar PDF</button>
-		</form>
+            <button type="button" onclick="gerarPDF()">Gerar PDF</button>
+        </form>
 
-		<script>
-    async function gerarPDF() {
-        const nome = document.getElementById('nome').value;
-        const telefone = document.getElementById('telefone').value;
-        const emissao = document.getElementById('emissao').value;
-        const entrega = document.getElementById('entrega').value;
-        const quantidade = document.getElementById('quantidade').value;
-        const acabamento = document.getElementById('acabamento').value;
-        const valor = document.getElementById('valor').value;
-        const pagamento = document.getElementById('pagamento').value;
-        const descricao = document.getElementById('descricao').value;
-        const imgInput = document.getElementById('img');
+        <script>
+            async function carregarLogo(src) {
+                return new Promise((resolve, reject) => {
+                    const logo = new Image();
+                    logo.src = src;
+                    logo.onload = () => resolve(logo);
+                    logo.onerror = (err) => reject(err);
+                });
+            }
 
-        if (!nome) {
-            alert("Por favor, preencha os campos antes de gerar a nota de serviço.");
-            return;
-        }
+            async function processarImagens(files) {
+                const promises = [];
+                let yPosition = 100; // Posição inicial
 
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
+                for (const file of files) {
+                    const reader = new FileReader();
+                    const promise = new Promise((resolve, reject) => {
+                        reader.onload = (event) => {
+                            resolve({ data: event.target.result, y: yPosition });
+                            yPosition += 60; // Incrementa a posição para a próxima imagem
+                        };
+                        reader.onerror = (err) => reject(err);
+                    });
+                    reader.readAsDataURL(file);
+                    promises.push(promise);
+                }
+                return Promise.all(promises);
+            }
 
-        // Configuração do PDF
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(20);
-        pdf.text("Ordem de Serviço - Fundição Reciclar", 50, 20);
+            async function gerarPDF() {
+                const nome = document.getElementById('nome').value;
+                const telefone = document.getElementById('telefone').value;
+                const emissao = document.getElementById('emissao').value;
+                const entrega = document.getElementById('entrega').value;
+                const quantidade = document.getElementById('quantidade').value;
+                const acabamento = document.getElementById('acabamento').value;
+                const valor = document.getElementById('valor').value;
+                const pagamento = document.getElementById('pagamento').value;
+                const descricao = document.getElementById('descricao').value;
+                const imgInput = document.getElementById('img');
 
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(14);
-        pdf.text(`Nome: ${nome}`, 10, 30);
-        pdf.text(`Telefone: ${telefone}`, 120, 30);
-        pdf.text(`Data de Emissão: ${emissao}`, 10, 35);
-        pdf.text(`Data de Entrega: ${entrega}`, 120, 35);
-        pdf.text(`Quantidade: ${quantidade}`, 10, 40);
-        pdf.text(`Acabamento: ${acabamento}`, 10, 45);
-        pdf.text(`Valor: ${valor}`, 10, 50);
-        pdf.text(`Pagamento: ${pagamento}`, 120, 50);
-        pdf.text("Descrição:", 10, 60, {maxWidth: 160});
-        pdf.text(descricao || "Nenhuma descrição fornecida.", 30, 60, { maxWidth: 150 });
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
 
-        // Adicionar imagem, se houver
-        if (imgInput.files && imgInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                const imgData = event.target.result;
-                const img = new Image();
+                try {
+                    // Carregar o logo
+                    const logo = await carregarLogo("logo.jpg");
+                    pdf.addImage(logo, 'JPG', 10, 10, 30, 30);
 
-                img.onload = function () {
-                    const maxHeight = 50; // Altura máxima permitida
-                    const aspectRatio = img.width / img.height; // Proporção da imagem
-                    const height = Math.min(maxHeight, img.height); // Calcula a altura
-                    const width = height * aspectRatio; // Calcula a largura proporcional
+                    // Configuração do PDF
+                    pdf.setFont("helvetica", "bold");
+                    pdf.setFontSize(20);
+                    pdf.text("Ordem de Serviço - Fundição Reciclar", 50, 20);
 
-                    pdf.addImage(imgData, 'JPEG', 10, 85, width, height); // Adiciona a imagem ao PDF
-                    pdf.save(`Relatorio_${nome}.pdf`);
-                };
+                    pdf.setFont("helvetica", "normal");
+                    pdf.setFontSize(14);
+                    pdf.text(`Nome: ${nome}`, 10, 50);
+                    pdf.text(`Telefone: ${telefone}`, 120, 50);
+                    pdf.text(`Data de Emissão: ${emissao}`, 10, 55);
+                    pdf.text(`Data de Entrega: ${entrega}`, 120, 55);
+                    pdf.text(`Quantidade: ${quantidade}`, 10, 60);
+                    pdf.text(`Acabamento: ${acabamento}`, 10, 65);
+                    pdf.text(`Valor: ${valor}`, 10, 70);
+                    pdf.text(`Pagamento: ${pagamento}`, 120, 70);
+                    pdf.text("Descrição:", 10, 80);
+                    pdf.text(descricao || "Nenhuma descrição fornecida.", 40, 80, { maxWidth: 150 });
 
-                img.src = imgData; // Define o source da imagem para obter suas dimensões
-            };
-            reader.readAsDataURL(imgInput.files[0]);
-        } else {
-            // Salvar PDF se não houver imagem
-            pdf.save(`Relatorio_${nome}.pdf`);
-        }
-    }
-</script>
+                    // Adicionar imagens
+                    if (imgInput.files.length > 0) {
+                        const imagens = await processarImagens(imgInput.files);
+                        imagens.forEach((img) => {
+                            pdf.addImage(img.data, 'JPEG', 10, img.y, 50, 50);
+                        });
+                    }
 
-	</main>
-	<footer>
-		<p>Desenvolvido por Igor e Auriandra.</p>
-	</footer>
+                    // Salvar PDF
+                    pdf.save(`OrdemDeServico_${nome}.pdf`);
+                } catch (error) {
+                    alert("Erro ao gerar o PDF: " + error.message);
+                }
+            }
+        </script>
+    </main>
+    <footer>
+        <p>Desenvolvido por Igor e Auriandra.</p>
+    </footer>
 </body>
 </html>
