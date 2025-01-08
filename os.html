@@ -113,7 +113,7 @@
 
                     // Salvar PDF após a última imagem ser processada
                     if (file === imgInput.files[imgInput.files.length - 1]) {
-                        pdf.save(`OrdemDeServico_${nome}.pdf`);
+                        pdf.save(`Relatorio_${nome}.pdf`);
                     }
                 };
                 reader.readAsDataURL(file);
